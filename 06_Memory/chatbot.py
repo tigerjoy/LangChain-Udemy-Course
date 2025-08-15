@@ -1,5 +1,7 @@
 """Python file to serve as the frontend"""
 
+import os
+from pydantic import SecretStr
 import streamlit as st
 from streamlit_chat import message
 from dotenv import load_dotenv, find_dotenv
@@ -22,16 +24,31 @@ template = """You are an AI chatbot having a conversation with a human.
 Human: {human_input}
 AI: """
 
+llm = ChatOpenAI(
+    model=os.getenv("MODEL", ""),
+    base_url=os.getenv("API_URL", ""),
+    api_key=SecretStr(os.getenv("API_KEY", "")),
+    temperature=0
+)
+
 # TODO: Add prompt
+prompt = PromptTemplate.from_template(template)
 
 msgs = StreamlitChatMessageHistory(key="special_app_key")
 
 # TODO: Add Memory
+memory = ConversationBufferMemory()
 
 
 def load_chain():
-    # Add an LLMChain with memory and a prompt
-    return llm_chain
+  # Add an LLMChain with memory and a prompt
+  llm_chain = LLMChain(
+      llm=llm,
+      prompt=prompt,
+      memory=memory
+  )
+
+  return llm_chain
 
 
 def initialize_session_state():
